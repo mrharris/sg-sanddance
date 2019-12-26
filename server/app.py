@@ -1,9 +1,12 @@
-import os
 import json
+import os
+from datetime import datetime
 
-from flask import Flask, request, render_template
 import shotgun_api3
+from flask import Flask, request, render_template
 
+# react builds the html and static assets into a folder called "build" rather
+# than "templates" so tell flask to search for them under "build" instead
 app = Flask(__name__, static_folder="../build/static", template_folder="../build")
 
 sg = shotgun_api3.Shotgun(
@@ -27,4 +30,47 @@ def route():
         entity_fields,
     )
 
+    # massage the sg entity data into something more compatible with sanddance
+    for entity in entities:
+        traverse(entity)
+
     return render_template("index.html", entities=json.dumps(entities))
+
+
+def traverse(entity):
+    # recurse through any linked entities
+    for field, value in entity.items():
+        if not isinstance(value, list):
+            value = [value]
+        for v in value:
+            if isinstance(v, dict) and "id" in v:
+                # value is another entity
+                traverse(v)
+    conform(entity)
+
+
+def conform(entity):
+    # process the entity fields
+    rename_fields = []
+    for field, value in entity.items():
+        # convert entities into just their "name" value
+        if isinstance(value, list):
+            value = ",".join([v["name"] for v in value])
+        elif isinstance(value, dict):
+            value = value["name"]
+        # datetime object is not serialisable
+        elif isinstance(value, datetime):
+            value = str(value)
+        if isinstance(value, str):
+            # truncate long strings
+            value = value[:80] + (value[80:] and '..')
+
+        entity[field] = value
+
+        # sanddance doesn't support field names with "."
+        # so convert those field names to "-"
+        if "." in field:
+            rename_fields.append(field)
+
+    for rename_field in rename_fields:
+        entity[rename_field.replace(".", "-")] = entity.pop(rename_field)

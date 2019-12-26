@@ -14,20 +14,12 @@ fabric.initializeIcons();
 
 use(fabric, vega, deck, layers, luma);
 
-const data = [
-  { a: 1, b: "c1", c: 10 },
-  { a: 1, b: "c2", c: 20 },
-  { a: 2, b: "c3", c: 30 },
-  { a: 3, b: "c4", c: 40 }
-];
-
 function get_data() {
     let el = document.getElementById("app");
     return JSON.parse(JSON.parse(el.dataset.entities));
 }
 
 const explorerProps = {
-  logoClickUrl: "https://microsoft.github.io/SandDance/",
   mounted: explorer => {
     explorer.load(get_data());
   }
