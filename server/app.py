@@ -1,9 +1,10 @@
 import os
+import json
 
-from flask import Flask, request, jsonify
+from flask import Flask, request, render_template
 import shotgun_api3
 
-app = Flask(__name__)
+app = Flask(__name__, static_folder="../build/static", template_folder="../build")
 
 sg = shotgun_api3.Shotgun(
     os.environ.get("SG_URL"),
@@ -20,10 +21,10 @@ def route():
     entity_type = post_dict["entity_type"]
     entity_fields = [col for col in post_dict["cols"].split(",")]
 
-    data = sg.find(
+    entities = sg.find(
         entity_type,
         [["id", "in", entity_ids]],
         entity_fields,
     )
 
-    return jsonify(data)
+    return render_template("index.html", entities=json.dumps(entities))

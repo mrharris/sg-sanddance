@@ -7,7 +7,7 @@ import * as layers from "@deck.gl/layers";
 import * as luma from "luma.gl";
 import * as fabric from "office-ui-fabric-react";
 import * as vega from "vega";
-import { Explorer, use } from "@msrvida/sanddance-explorer";
+import {Explorer, use} from "@msrvida/sanddance-explorer";
 import "./styles.css";
 
 fabric.initializeIcons();
@@ -21,10 +21,15 @@ const data = [
   { a: 3, b: "c4", c: 40 }
 ];
 
+function get_data() {
+    let el = document.getElementById("app");
+    return JSON.parse(JSON.parse(el.dataset.entities));
+}
+
 const explorerProps = {
   logoClickUrl: "https://microsoft.github.io/SandDance/",
   mounted: explorer => {
-    explorer.load(data);
+    explorer.load(get_data());
   }
 };
 
